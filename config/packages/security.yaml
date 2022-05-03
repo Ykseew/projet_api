@@ -1,0 +1,43 @@
+security:
+    encoders:
+        App\Entity\User:
+            algorithm: bcrypt
+
+    # https://symfony.com/doc/current/security.html#where-do-users-come-from-user-providers
+    providers:
+        # used to reload user from session & other features (e.g. switch_user)
+        app_user_provider:
+            entity:
+                class: App\Entity\User
+                property: email
+    firewalls:
+        login:
+            pattern: ^/login
+            stateless: true
+            json_login:
+                check_path: /login_check # or api_login_check as defined in config/routes.yaml
+                success_handler: lexik_jwt_authentication.handler.authentication_success
+                failure_handler: lexik_jwt_authentication.handler.authentication_failure
+        register:
+            pattern: ^/register
+
+            stateless: true
+            anonymous: true
+            json_login:
+                check_path: /register_check
+                success_handler: lexik_jwt_authentication.handler.authentication_success
+                failure_handler: lexik_jwt_authentication.handler.authentication_failure
+
+        api:
+            pattern: ^/
+            stateless: true
+            guard:
+                authenticators:
+                    - lexik_jwt_authentication.jwt_token_authenticator
+
+    access_control:
+        - { path: /login, roles: IS_AUTHENTICATED_ANONYMOUSLY }
+        - { path: /register, roles: IS_AUTHENTICATED_ANONYMOUSLY }
+        - { path: /machines,  roles: IS_AUTHENTICATED_FULLY }
+        - { path: /,       roles: IS_AUTHENTICATED_FULLY }
+
